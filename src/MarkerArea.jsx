@@ -58,6 +58,32 @@ function MarkerArea({ data, onBack }) {
         }));
     };
 
+    // Добавь этот блок внутрь компонента MarkerArea, перед return
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            // Перелистывание стрелками
+            if (e.key === 'ArrowRight') {
+                setCurrentIndex(p => Math.min(items.length - 1, p + 1));
+            }
+            if (e.key === 'ArrowLeft') {
+                setCurrentIndex(p => Math.max(0, p - 1));
+            }
+
+            // Переключение вкладок цифрами
+            if (e.key === '1') setActiveField('main');
+            if (e.key === '2') setActiveField('alt');
+            if (e.key === '3') setActiveField('glow');
+        };
+
+        // Вешаем слушатель
+        window.addEventListener('keydown', handleKeyDown);
+
+        // Убираем слушатель при выходе, чтобы не было ошибок
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [items.length]); // Следим за длиной массива
+
+
     return (
         <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans">
             <div className="max-w-6xl mx-auto bg-white rounded-[3rem] shadow-xl overflow-hidden border border-slate-100 flex flex-col md:flex-row">
