@@ -1,96 +1,144 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+
+const LURE_COLORS = {
+    GOLD:             { hex: '#d8bc03', shine: '#FFE4B5', isMetallic: true, label: 'Золотой' },
+    SILVER:           { hex: '#708090', shine: '#E6E6FA', isMetallic: true, label: 'Серебряный' },
+    EMERALD:          { hex: '#004d40', shine: '#4db6ac', isMetallic: true, label: 'Изумрудный' },
+    PURPLE_METALLIC:  { hex: '#4B0082', shine: '#9370DB', isMetallic: true, label: 'Фиол. мет.' },
+    BLUE_METALLIC:    { hex: '#000072', shine: '#2563EB', isMetallic: true, label: 'Син. мет.' },
+    CLEAR:            { isClear: true, label: 'Прозрачный' },
+    WHITE:            { hex: '#F8FAFC', label: 'Белый' },
+    BLACK:            { hex: '#0F172A', label: 'Черный' },
+    GREY:             { hex: '#64748B', label: 'Серый' },
+    BROWN:            { hex: '#5C4033', label: 'Коричневый' },
+    MUSTARD:          { hex: '#C59500', label: 'Горчичный' },
+    SAND:             { hex: '#CBA560', label: 'Песочный' },
+    BEIGE:            { hex: '#ddc69d', label: 'Бежевый' },
+    ORANGE:           { hex: '#F97316', label: 'Оранжевый' },
+    YELLOW:           { hex: '#ffbf00', label: 'Желтый' },
+    BURGUNDY:         { hex: '#5c0e22', label: 'Бордовый' },
+    CRIMSON:          { hex: '#B00149', label: 'Малиновый' },
+    RED:              { hex: '#d41c1c', label: 'Красный' },
+    PINK:             { hex: '#fb84bf', label: 'Розовый' },
+    PALE_PINK:        { hex: '#f8d2de', label: 'Бл-розовый' },
+    PURPLE:           { hex: '#A855F7', label: 'Фиолетовый' },
+    NAVY_BLUE:        { hex: '#000072', label: 'Т-синий' },
+    BLUE:             { hex: '#2563EB', label: 'Синий' },
+    LIGHT_BLUE:       { hex: '#7dd0ec', label: 'Голубой' },
+    AQUAMARINE:       { hex: '#2DD4BF', label: 'Морской' },
+    MINT:             { hex: '#BBF7D0', label: 'Мятный' },
+    OLIVE:            { hex: '#636B2F', label: 'Оливковый' },
+    GREEN:            { hex: '#0a7030', label: 'Зеленый' },
+    CHARTREUSE:       { hex: '#95ff00', label: 'Шартрез' },
+};
 
 function MarkerArea({ data, onBack }) {
-    // 1. Превращаем объект в массив и сразу сортируем по алфавиту (по названию цвета)
-    const [items] = useState(() =>
-        Object.entries(data).sort((a, b) => a[0].localeCompare(b[0]))
-    );
-
-    // 2. Индекс текущей приманки
+    const [items] = useState(() => Object.entries(data).sort((a, b) => a[0].localeCompare(b[0])));
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [activeField, setActiveField] = useState('main');
 
-    if (!data || items.length === 0) return null;
+    const [results, setResults] = useState(() => {
+        const saved = localStorage.getItem('trout_mapping_data');
+        if (saved) return JSON.parse(saved);
+        const initialState = {};
+        Object.keys(data).forEach(k => { initialState[k] = { main: null, alt: null } });
+        return initialState;
+    });
+
+    useEffect(() => {
+        localStorage.setItem('trout_mapping_data', JSON.stringify(results));
+    }, [results]);
 
     const [colorName, imageUrl] = items[currentIndex];
 
-    // Функции навигации
-    const nextLure = () => {
-        if (currentIndex < items.length - 1) setCurrentIndex(currentIndex + 1);
-    };
-
-    const prevLure = () => {
-        if (currentIndex > 0) setCurrentIndex(currentIndex - 1);
+    const selectColor = (colorKey) => {
+        setResults(prev => ({
+            ...prev,
+            [colorName]: { ...prev[colorName], [activeField]: colorKey }
+        }));
+        // Автопереключение на alt после выбора main (опционально, для скорости)
+        if (activeField === 'main' && !results[colorName].alt) setActiveField('alt');
     };
 
     return (
-        <div className="min-h-screen bg-white p-8 font-sans text-slate-900">
-            <div className="max-w-5xl mx-auto">
+        <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans">
+            <div className="max-w-6xl mx-auto bg-white rounded-[3rem] shadow-xl overflow-hidden border border-slate-100 flex flex-col md:flex-row">
 
-                {/* Верхняя панель */}
-                <div className="flex justify-between items-center mb-8">
-                    <button onClick={onBack} className="group text-slate-400 hover:text-slate-800 flex items-center gap-2 transition-colors">
-                        <span className="text-xl">«</span> Выход из разметки
+                {/* Левая панель: Инфо и Картинка */}
+                <div className="w-full md:w-1/2 p-8 border-r border-slate-100 flex flex-col h-full">
+                    <div className="flex justify-between items-start mb-8">
+                        <button onClick={onBack} className="text-slate-400 hover:text-slate-800 text-xs font-black tracking-tighter">← НАЗАД</button>
+                        <div className="px-4 py-1 bg-slate-100 rounded-full text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                            {currentIndex + 1} / {items.length}
+                        </div>
+                    </div>
+
+                    <div className="flex-grow flex items-center justify-center bg-slate-50 rounded-[2rem] p-6 mb-6">
+                        <img key={imageUrl} src={imageUrl} className="max-w-full max-h-[350px] mix-blend-multiply" />
+                    </div>
+
+                    <h2 className="text-2xl font-black text-slate-800 leading-tight mb-4">{colorName}</h2>
+
+                    <div className="flex gap-3">
+                        <button onClick={() => setCurrentIndex(p => Math.max(0, p - 1))} className="flex-1 py-4 bg-slate-100 rounded-2xl font-bold text-slate-600 active:scale-95 transition-transform">←</button>
+                        <button onClick={() => setCurrentIndex(p => Math.min(items.length - 1, p + 1))} className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-bold active:scale-95 transition-transform">→</button>
+                    </div>
+                </div>
+
+                {/* Правая панель: Палитра */}
+                <div className="w-full md:w-1/2 p-8 flex flex-col bg-slate-50/30">
+
+                    {/* Выбор активного поля */}
+                    <div className="grid grid-cols-2 gap-4 mb-8">
+                        {['main', 'alt'].map(f => (
+                            <button
+                                key={f}
+                                onClick={() => setActiveField(f)}
+                                className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center ${activeField === f ? 'border-blue-500 bg-blue-50 shadow-md scale-105 z-10' : 'border-white bg-white text-slate-400 opacity-60'}`}
+                            >
+                                <span className="text-[10px] font-black uppercase tracking-widest mb-1">{f} color</span>
+                                <span className="text-sm font-bold text-slate-800">
+       {/* Знак вопроса после LURE_COLORS[...] предотвратит ошибку, если цвета нет в списке */}
+                                    {LURE_COLORS[results[colorName][f]]?.label || 'не выбран'}
+    </span>
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Сетка цветов */}
+                    <div className="grid grid-cols-4 sm:grid-cols-5 gap-4 overflow-y-auto pr-2 custom-scrollbar">
+                        {Object.entries(LURE_COLORS).map(([key, info]) => (
+                            <button
+                                key={key}
+                                onClick={() => selectColor(key)}
+                                className={`group flex flex-col items-center gap-1.5 p-1 rounded-xl transition-all ${results[colorName][activeField] === key ? 'scale-110' : 'hover:scale-105'}`}
+                            >
+                                <div
+                                    className={`w-12 h-12 rounded-2xl shadow-md relative overflow-hidden transition-all ${info.isClear ? 'border-2 border-dashed border-slate-300' : 'border-2 border-white'} ${results[colorName][activeField] === key ? 'ring-4 ring-blue-400 ring-offset-2' : ''}`}
+                                    style={{
+                                        background: info.isClear ? 'white' : (info.isMetallic ? `radial-gradient(circle at 35% 35%, ${info.shine}, ${info.hex})` : info.hex)
+                                    }}
+                                >
+                                    {info.isClear && <div className="absolute inset-0 flex items-center justify-center text-[7px] font-bold text-slate-400 uppercase">Clear</div>}
+                                </div>
+                                <span className="text-[8px] font-black text-slate-500 text-center leading-none uppercase tracking-tighter">{info.label}</span>
+                            </button>
+                        ))}
+
+                        <button onClick={() => selectColor(null)} className="flex flex-col items-center gap-1.5 p-1 opacity-40 hover:opacity-100">
+                            <div className="w-12 h-12 rounded-2xl border-2 border-slate-300 flex items-center justify-center text-slate-400 font-bold text-lg">×</div>
+                            <span className="text-[8px] font-black text-slate-400 uppercase leading-none">Сброс</span>
+                        </button>
+                    </div>
+
+                    <button onClick={() => {
+                        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(results, null, 2));
+                        const a = document.createElement('a'); a.href = dataStr; a.download = "mapping.json"; a.click();
+                    }} className="mt-auto w-full py-4 bg-emerald-500 text-white rounded-2xl font-black text-xs tracking-widest uppercase hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-100">
+                        Экспортировать результат
                     </button>
-
-                    <div className="flex flex-col items-end">
-                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest leading-none mb-1">Прогресс</span>
-                        <div className="text-sm font-black text-slate-700 bg-slate-100 px-3 py-1 rounded-full">
-                            {currentIndex + 1} <span className="text-slate-400 font-medium">/ {items.length}</span>
-                        </div>
-                    </div>
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-12 items-center md:items-start">
-
-                    {/* Левая часть: Картинка и управление */}
-                    <div className="w-full md:w-1/2 space-y-6">
-                        <div className="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100 shadow-inner min-h-[450px] flex items-center justify-center relative group">
-                            <img
-                                key={imageUrl}
-                                src={imageUrl}
-                                alt={colorName}
-                                className="max-w-full max-h-full rounded-2xl shadow-sm mix-blend-multiply transition-opacity duration-300"
-                            />
-                        </div>
-
-                        {/* Кнопки Назад / Вперед */}
-                        <div className="flex gap-4">
-                            <button
-                                onClick={prevLure}
-                                disabled={currentIndex === 0}
-                                className="flex-1 py-4 bg-white border-2 border-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95"
-                            >
-                                ← Назад
-                            </button>
-                            <button
-                                onClick={nextLure}
-                                disabled={currentIndex === items.length - 1}
-                                className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 disabled:opacity-30 transition-all shadow-lg active:scale-95"
-                            >
-                                Вперед →
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Правая часть: Описание и палитра */}
-                    <div className="w-full md:w-1/2 pt-4">
-                        <div className="inline-block px-3 py-1 bg-blue-50 rounded-lg mb-3">
-                            <span className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Цвет создателя</span>
-                        </div>
-                        <h2 className="text-4xl font-black text-slate-800 leading-tight mb-8">
-                            {colorName}
-                        </h2>
-
-                        {/* Заглушка под твою шкалу */}
-                        <div className="p-10 border-2 border-dashed border-slate-200 rounded-[2rem] bg-slate-50/50 flex flex-col items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-slate-200 animate-pulse"></div>
-                            <p className="text-slate-400 text-center italic text-sm px-10">
-                                Здесь мы разместим твою шкалу цветов для маппинга
-                            </p>
-                        </div>
-                    </div>
-
-                </div>
             </div>
         </div>
     )
