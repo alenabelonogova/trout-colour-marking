@@ -6,6 +6,8 @@ function MarkerArea({ data, onBack }) {
     const [items] = useState(() => Object.entries(data).sort((a, b) => a[0].localeCompare(b[0])));
     const [currentIndex, setCurrentIndex] = useState(0);
     const [activeField, setActiveField] = useState('main');
+    const [goToIndex, setGoToIndex] = useState(currentIndex + 1);
+
 
     const [results, setResults] = useState(() => {
         const saved = localStorage.getItem('trout_mapping_data');
@@ -14,6 +16,23 @@ function MarkerArea({ data, onBack }) {
         Object.keys(data).forEach(k => { initialState[k] = { main: null, alt: null, glow: 'NO' } });
         return initialState;
     });
+    // 2. Синхронизируем поле ввода, когда листаем стрелками
+    useEffect(() => {
+        setGoToIndex(currentIndex + 1);
+    }, [currentIndex]);
+
+// 3. Функция для перехода
+    const handleJump = (e) => {
+        if (e.key === 'Enter') {
+            const newIndex = parseInt(goToIndex) - 1;
+            if (!isNaN(newIndex) && newIndex >= 0 && newIndex < items.length) {
+                setCurrentIndex(newIndex);
+                e.target.blur(); // Убираем фокус с поля после ввода
+            } else {
+                setGoToIndex(currentIndex + 1); // Сбрасываем, если ввели ерунду
+            }
+        }
+    };
 
     useEffect(() => {
         localStorage.setItem('trout_mapping_data', JSON.stringify(results));
@@ -62,8 +81,17 @@ function MarkerArea({ data, onBack }) {
                 <div className="w-full md:w-1/2 p-8 border-r border-slate-100 flex flex-col">
                     <div className="flex justify-between items-start mb-8">
                         <button onClick={onBack} className="text-slate-400 hover:text-slate-800 text-xs font-black tracking-tighter">← НАЗАД</button>
-                        <div className="px-4 py-1 bg-slate-100 rounded-full text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                            {currentIndex + 1} / {items.length}
+                        <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full">
+                            <input
+                                type="text"
+                                value={goToIndex}
+                                onChange={(e) => setGoToIndex(e.target.value)}
+                                onKeyDown={handleJump}
+                                className="w-12 bg-transparent text-center font-black text-slate-700 outline-none border-b-2 border-slate-200 focus:border-blue-500 transition-colors"
+                            />
+                            <span className="text-slate-400 font-bold text-[10px] uppercase tracking-widest">
+    из {items.length}
+  </span>
                         </div>
                     </div>
                     <div className="flex-grow flex items-center justify-center bg-slate-50 rounded-[2rem] p-6 mb-6">
