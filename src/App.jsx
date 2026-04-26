@@ -1,6 +1,6 @@
 // src/App.jsx
 import { useState, useEffect } from 'react'
-import MarkerArea from './MarkerArea' // Импортируем наш новый компонент
+import MarkerArea from './components/MarkerArea' // Импортируем наш новый компонент
 
 function App() {
     const [fileStatus, setFileStatus] = useState('Checking...')
@@ -11,7 +11,7 @@ function App() {
 
 
     useEffect(() => {
-        import('./data.json')
+        import('./data/data.json')
             .then((module) => {
                 const data = module.default
                 setRowCount(Object.keys(data).length)

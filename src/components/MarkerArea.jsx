@@ -1,36 +1,6 @@
 import { useState, useEffect } from 'react'
+import { LURE_COLORS } from '../constants/colors';
 
-const LURE_COLORS = {
-    GOLD:             { hex: '#d8bc03', shine: '#FFE4B5', isMetallic: true, label: 'Золотой' },
-    SILVER:           { hex: '#708090', shine: '#E6E6FA', isMetallic: true, label: 'Серебряный' },
-    EMERALD:          { hex: '#004d40', shine: '#4db6ac', isMetallic: true, label: 'Изумрудный' },
-    PURPLE_METALLIC:  { hex: '#4B0082', shine: '#9370DB', isMetallic: true, label: 'Фиол. мет.' },
-    BLUE_METALLIC:    { hex: '#000072', shine: '#2563EB', isMetallic: true, label: 'Син. мет.' },
-    CLEAR:            { isClear: true, label: 'Прозрачный' },
-    WHITE:            { hex: '#F8FAFC', label: 'Белый' },
-    BLACK:            { hex: '#0F172A', label: 'Черный' },
-    GREY:             { hex: '#64748B', label: 'Серый' },
-    BROWN:            { hex: '#5C4033', label: 'Коричневый' },
-    MUSTARD:          { hex: '#C59500', label: 'Горчичный' },
-    SAND:             { hex: '#CBA560', label: 'Песочный' },
-    BEIGE:            { hex: '#ddc69d', label: 'Бежевый' },
-    ORANGE:           { hex: '#F97316', label: 'Оранжевый' },
-    YELLOW:           { hex: '#ffbf00', label: 'Желтый' },
-    BURGUNDY:         { hex: '#5c0e22', label: 'Бордовый' },
-    CRIMSON:          { hex: '#B00149', label: 'Малиновый' },
-    RED:              { hex: '#d41c1c', label: 'Красный' },
-    PINK:             { hex: '#fb84bf', label: 'Розовый' },
-    PALE_PINK:        { hex: '#f8d2de', label: 'Бл-розовый' },
-    PURPLE:           { hex: '#A855F7', label: 'Фиолетовый' },
-    NAVY_BLUE:        { hex: '#000072', label: 'Т-синий' },
-    BLUE:             { hex: '#2563EB', label: 'Синий' },
-    LIGHT_BLUE:       { hex: '#7dd0ec', label: 'Голубой' },
-    AQUAMARINE:       { hex: '#2DD4BF', label: 'Морской' },
-    MINT:             { hex: '#BBF7D0', label: 'Мятный' },
-    OLIVE:            { hex: '#636B2F', label: 'Оливковый' },
-    GREEN:            { hex: '#0a7030', label: 'Зеленый' },
-    CHARTREUSE:       { hex: '#95ff00', label: 'Шартрез' },
-};
 
 function MarkerArea({ data, onBack }) {
     const [items] = useState(() => Object.entries(data).sort((a, b) => a[0].localeCompare(b[0])));
